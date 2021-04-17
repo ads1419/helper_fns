@@ -3,6 +3,7 @@ from typing import Union
 
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 
 
 def load_rgb(image_path: Union[Path, str], lib: str = "cv2") -> np.array:
@@ -48,3 +49,30 @@ def load_rgba(image_path: Union[Path, str], lib: str = "cv2") -> np.array:
         return image
 
     raise FileNotFoundError(f"File not found {image_path}")
+
+
+def show(image: Union[np.array, Path, str], transparency: bool = True) -> None:
+    """Plots an image.
+
+    Args:
+        image (Union[np.array, Path, str]): cv2 image or path-like.
+        transparency (bool, optional): If True, respects the alpha channel. Defaults to True.
+    """
+
+    if isinstance(image, str) or isinstance(image, Path):
+        if transparency:
+            image = load_rgba(image)
+        else:
+            image = load_rgb(image)
+
+    if image.ndim == 2:
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+
+    fig, ax = plt.subplots()
+    ax.axis("off")
+
+    if transparency:
+        ax.imshow(image, alpha=image[:, :, 3])
+
+    else:
+        ax.imshow(image)
