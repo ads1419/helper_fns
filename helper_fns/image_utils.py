@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union
+from typing import Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -51,7 +51,53 @@ def load_rgba(image_path: Union[Path, str], lib: str = "cv2") -> np.array:
     raise FileNotFoundError(f"File not found {image_path}")
 
 
-def show(image: Union[np.array, Path, str], transparency: bool = True) -> None:
+def overlay_image_alpha(
+    background: np.ndarray,
+    foreground: np.ndarray,
+    pos: Tuple[int, int],
+    alpha_mask: Optional[np.ndarray] = None,  # alpha channel rescaled to [0, 1]
+    opacity: float = 1.0,
+) -> np.ndarray:
+    """Overlay a four-channel image onto a background.
+
+    Args:
+        background (np.ndarray): 3 or 4 channels.
+        foreground (np.ndarray): 4 channels.
+        pos (Tuple[int, int]): top left, bottom right pixel position to paste fg on.
+        alpha_mask (Optional[np.ndarray], optional): Optional alpha mask. Defaults to None.
+
+    Returns:
+        np.ndarray: Composited image.
+    """
+    x, y = pos
+    if alpha_mask is None:
+        alpha_mask = foreground[:, :, 3] / 255.0
+
+    # Image ranges
+    y1, y2 = max(0, y), min(background.shape[0], y + foreground.shape[0])
+    x1, x2 = max(0, x), min(background.shape[1], x + foreground.shape[1])
+
+    # Overlay ranges
+    y1o, y2o = max(0, -y), min(foreground.shape[0], background.shape[0] - y)
+    x1o, x2o = max(0, -x), min(foreground.shape[1], background.shape[1] - x)
+
+    # Exit if nothing to do
+    if y1 >= y2 or x1 >= x2 or y1o >= y2o or x1o >= x2o:
+        return background
+
+    channels = background.shape[2]
+
+    alpha = alpha_mask[y1o:y2o, x1o:x2o] * opacity
+    alpha_inv = 1.0 - alpha
+
+    composite = background.copy()
+    for c in range(channels):
+        composite[y1:y2, x1:x2, c] = alpha * foreground[y1o:y2o, x1o:x2o, c] + alpha_inv * background[y1:y2, x1:x2, c]
+
+    return composite
+
+
+def show(image: Union[np.array, Path, str], transparency: bool = False) -> None:
     """Plots an image.
 
     Args:
