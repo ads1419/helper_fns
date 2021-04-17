@@ -1,0 +1,5 @@
+.vscode/settings.json
+.mypy_cache
+tester.ipynb
+.ipynb_checkpoints/
+__pycache__/
