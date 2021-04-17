@@ -1,5 +1,6 @@
+import os
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -122,3 +123,22 @@ def show(image: Union[np.array, Path, str], transparency: bool = False) -> None:
 
     else:
         ax.imshow(image)
+
+
+def get_image_files(folder: Union[Path, str], extensions: List[str] = [".jpeg", ".jpg", ".png"]) -> List[Path]:
+    """Recursively retrieve a list of image files from the root folder and subfolders.
+
+    Args:
+        folder (Union[Path, str]): Root directory.
+        extensions (List[str], optional):  Defaults to [".jpeg", ".jpg", ".png"].
+
+    Returns:
+        List[Path]: List of image paths.
+    """
+    files = []
+    for dirpath, _, filenames in os.walk(folder):
+        for file in filenames:
+            if Path(file).suffix in extensions:
+                files.append(Path(os.path.join(dirpath, file)))
+
+    return files
