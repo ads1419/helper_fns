@@ -98,19 +98,15 @@ def overlay_image_alpha(
     return composite
 
 
-def show(image: Union[np.array, Path, str], transparency: bool = False) -> None:
+def show(image: Union[np.array, Path, str]) -> None:
     """Plots an image.
 
     Args:
         image (Union[np.array, Path, str]): cv2 image or path-like.
-        transparency (bool, optional): If True, respects the alpha channel. Defaults to True.
     """
 
     if isinstance(image, str) or isinstance(image, Path):
-        if transparency:
-            image = load_rgba(image)
-        else:
-            image = load_rgb(image)
+        image = load_rgba(image)
 
     if image.ndim == 2:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
@@ -118,11 +114,7 @@ def show(image: Union[np.array, Path, str], transparency: bool = False) -> None:
     fig, ax = plt.subplots()
     ax.axis("off")
 
-    if transparency:
-        ax.imshow(image, alpha=image[:, :, 3])
-
-    else:
-        ax.imshow(image)
+    ax.imshow(image)
 
 
 def get_image_files(folder: Union[Path, str], extensions: List[str] = [".jpeg", ".jpg", ".png"]) -> List[Path]:
