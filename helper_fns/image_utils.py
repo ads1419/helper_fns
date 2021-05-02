@@ -134,3 +134,35 @@ def get_image_files(folder: Union[Path, str], extensions: List[str] = [".jpeg", 
                 files.append(Path(os.path.join(dirpath, file)))
 
     return files
+
+
+def get_bbox(four_channel_image: np.ndarray, alpha_thresh: int = 125) -> Tuple[int, int, int, int]:
+    """Get the opaque-pixels' bounding box for a four channel image.
+
+    Args:
+        four_channel_image (np.ndarray): Input image.
+        alpha_thresh (int, optional): Defaults to 125.
+
+    Returns:
+        Tuple[int, int, int, int]: (x_min, y_min, x_max, y_max)
+    """
+    assert four_channel_image.shape[2] == 4
+    mask = np.array(four_channel_image[:, :, 3] >= alpha_thresh, np.uint8)
+    y, x = mask.nonzero()
+    x_min, y_min, x_max, y_max = np.min(x), np.min(y), np.max(x), np.max(y)
+    return (x_min, y_min, x_max, y_max)
+
+
+def tight_crop(four_channel_image: np.ndarray, alpha_thresh: int = 0) -> np.ndarray:
+    """Returns a four-channel image with all edge rows and columns removed, that are entirely transparent.
+
+    Args:
+        four_channel_image (np.ndarray): Input image.
+        alpha_thresh (int, optional): Alpha channel threshold. Defaults to 0.
+
+    Returns:
+        np.ndarray: Tight-cropped image.
+    """
+    x_min, y_min, x_max, y_max = get_bbox(four_channel_image, alpha_thresh=alpha_thresh)
+    four_channel_image = four_channel_image[y_min:y_max, x_min:x_max]
+    return four_channel_image
