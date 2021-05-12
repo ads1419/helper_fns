@@ -107,7 +107,7 @@ def show(image: Union[np.array, Path, str], axes: str = "off") -> None:
     """
 
     if isinstance(image, str) or isinstance(image, Path):
-        image = load_rgba(image)
+        image = load_rgb(image)
 
     if image.ndim == 2:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
