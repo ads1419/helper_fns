@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import List, Optional, Tuple, Union
+from urllib.request import urlopen
 
 import cv2
 import numpy as np
@@ -174,6 +175,12 @@ def get_bbox(four_channel_image: np.ndarray, alpha_thresh: int = 125) -> Tuple[i
     return (x_min, y_min, x_max, y_max)
 
 
+def crop(image: np.ndarray, bbox: Tuple[int, int, int, int]) -> np.ndarray:
+    x_min, y_min, x_max, y_max = bbox
+    image = image[y_min:y_max, x_min:x_max]
+    return image
+
+
 def tight_crop(four_channel_image: np.ndarray, alpha_thresh: int = 0) -> np.ndarray:
     """Returns a four-channel image with all edge rows and columns removed, that are entirely transparent.
 
@@ -260,3 +267,23 @@ def resize(image: np.ndarray, width: int = None, height: int = None, inter: int 
 
     # return the resized image
     return resized
+
+
+def url_to_image(url: str, read_flag: int = cv2.IMREAD_COLOR) -> np.ndarray:
+    """Download the image, convert it to a NumPy array, and then read it into OpenCV format
+
+    Args:
+        url (str): Image URL
+        read_flag (int, optional): OpenCV image reading flag.
+            See https://docs.opencv.org/master/d8/d6a/group__imgcodecs__flags.html#ga61d9b0126a3e57d9277ac48327799c80
+
+    Returns:
+        np.ndarray: cv2 image.
+    """
+
+    resp = urlopen(url)
+    image = np.asarray(bytearray(resp.read()), dtype="uint8")
+    image = cv2.imdecode(image, read_flag)
+
+    # return the image
+    return image
