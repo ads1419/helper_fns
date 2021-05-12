@@ -98,11 +98,12 @@ def overlay_image_alpha(
     return composite
 
 
-def show(image: Union[np.array, Path, str]) -> None:
+def show(image: Union[np.array, Path, str], axes: str = "off") -> None:
     """Plots an image.
 
     Args:
         image (Union[np.array, Path, str]): cv2 image or path-like.
+        axes str: Whether to keep matplotlib axes "on" or "off"
     """
 
     if isinstance(image, str) or isinstance(image, Path):
@@ -112,9 +113,29 @@ def show(image: Union[np.array, Path, str]) -> None:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
 
     fig, ax = plt.subplots()
-    ax.axis("off")
+    ax.axis(axes)
 
     ax.imshow(image)
+
+
+def show_transparent_image(image: Union[np.array, Path, str], color: List = [52, 235, 232], axes: str = "off") -> None:
+    """Plots a transparent image on a solid background.
+
+    Args:
+        image (Union[np.array, Path, str]): cv2 image or path-like.
+        color (List, optional): Background RGB color. Defaults to [52, 235, 232].
+        axes (str, optional): Whether to keep matplotlib axes "on" or "off"
+    """
+    if isinstance(image, str) or isinstance(image, Path):
+        image = load_rgba(image)
+
+    assert image.ndim == 4, "Image does not contain an alpha channel."
+
+    solid_bg = np.ones_like(image[:, :, 0:3])
+    solid_bg[:, :, 2], solid_bg[:, :, 1], solid_bg[:, :, 0] = color  # RGB
+    rasterized = overlay_image_alpha(solid_bg, image, (0, 0))
+
+    show(rasterized, axes)
 
 
 def get_image_files(folder: Union[Path, str], extensions: List[str] = [".jpeg", ".jpg", ".png"]) -> List[Path]:
