@@ -187,3 +187,76 @@ def tight_crop(four_channel_image: np.ndarray, alpha_thresh: int = 0) -> np.ndar
     x_min, y_min, x_max, y_max = get_bbox(four_channel_image, alpha_thresh=alpha_thresh)
     four_channel_image = four_channel_image[y_min:y_max, x_min:x_max]
     return four_channel_image
+
+
+def rotate_bound(image: np.ndarray, angle: int) -> np.ndarray:
+    """Rotate an image by angle degrees while making sure that the object does not leave image frame.
+    Resizes the frame to accommodate the rotated object.
+    From https://github.com/jrosebr1/imutils/blob/master/imutils/convenience.py
+
+    Args:
+        image (np.ndarray): cv2 image
+        angle (int): Angle in degrees
+
+    Returns:
+        np.ndarray: Rotated image
+    """
+    (h, w) = image.shape[:2]
+    (cX, cY) = (w // 2, h // 2)
+
+    M = cv2.getRotationMatrix2D((cX, cY), -angle, 1.0)
+    cos = np.abs(M[0, 0])
+    sin = np.abs(M[0, 1])
+
+    nW = int((h * sin) + (w * cos))
+    nH = int((h * cos) + (w * sin))
+
+    M[0, 2] += (nW / 2) - cX
+    M[1, 2] += (nH / 2) - cY
+
+    return cv2.warpAffine(image, M, (nW, nH))
+
+
+def resize(image: np.ndarray, width: int = None, height: int = None, inter: int = cv2.INTER_AREA) -> np.ndarray:
+    """Resize an image to specific width or height while maintaining aspect ratio.
+    From https://github.com/jrosebr1/imutils/blob/master/imutils/convenience.py
+
+    Args:
+        image (np.ndarray): Input image
+        width (int, optional): Image width. Defaults to None.
+        height (int, optional): Image height. Defaults to None.
+        inter (int, optional): OpenCV interpolation methods. See
+            https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga5bb5a1fea74ea38e1a5445ca803ff121
+
+    Returns:
+        np.ndarray: Resized image
+    """
+    # initialize the dimensions of the image to be resized and
+    # grab the image size
+    dim = None
+    (h, w) = image.shape[:2]
+
+    # if both the width and height are None, then return the
+    # original image
+    if width is None and height is None:
+        return image
+
+    # check to see if the width is None
+    if width is None:
+        # calculate the ratio of the height and construct the
+        # dimensions
+        r = height / float(h)
+        dim = (int(w * r), height)
+
+    # otherwise, the height is None
+    else:
+        # calculate the ratio of the width and construct the
+        # dimensions
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    # resize the image
+    resized = cv2.resize(image, dim, interpolation=inter)
+
+    # return the resized image
+    return resized
