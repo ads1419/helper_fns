@@ -99,12 +99,13 @@ def overlay_image_alpha(
     return composite
 
 
-def show(image: Union[np.array, Path, str], axes: str = "off") -> None:
+def show(image: Union[np.array, Path, str], axes: str = "off", title: str = None) -> None:
     """Plots an image.
 
     Args:
         image (Union[np.array, Path, str]): cv2 image or path-like.
         axes str: Whether to keep matplotlib axes "on" or "off"
+        title str: Optionally, show image title
     """
 
     if isinstance(image, str) or isinstance(image, Path):
@@ -115,6 +116,8 @@ def show(image: Union[np.array, Path, str], axes: str = "off") -> None:
 
     fig, ax = plt.subplots()
     ax.axis(axes)
+    if title:
+        ax.set_title(title)
 
     ax.imshow(image)
 
