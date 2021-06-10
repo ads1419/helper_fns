@@ -53,6 +53,32 @@ def load_rgba(image_path: Union[Path, str], lib: str = "cv2") -> np.array:
     raise FileNotFoundError(f"File not found {image_path}")
 
 
+def url_to_image(url: str, read_flag: int = cv2.IMREAD_COLOR) -> np.ndarray:
+    """Download the image, convert it to a NumPy array, and then read it into OpenCV format
+
+    Args:
+        url (str): Image URL
+        read_flag (int, optional): OpenCV image reading flag.
+            See https://docs.opencv.org/master/d8/d6a/group__imgcodecs__flags.html#ga61d9b0126a3e57d9277ac48327799c80
+
+    Returns:
+        np.ndarray: cv2 image in RGB format.
+    """
+
+    resp = urlopen(url)
+    image = np.asarray(bytearray(resp.read()), dtype="uint8")
+    image = cv2.imdecode(image, read_flag)
+
+    if image.ndim == 4:
+        image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGBA)
+
+    elif image.ndim == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    # return the image
+    return image
+
+
 def overlay_image_alpha(
     background: np.ndarray,
     foreground: np.ndarray,
@@ -267,23 +293,3 @@ def resize(image: np.ndarray, width: int = None, height: int = None, inter: int 
 
     # return the resized image
     return resized
-
-
-def url_to_image(url: str, read_flag: int = cv2.IMREAD_COLOR) -> np.ndarray:
-    """Download the image, convert it to a NumPy array, and then read it into OpenCV format
-
-    Args:
-        url (str): Image URL
-        read_flag (int, optional): OpenCV image reading flag.
-            See https://docs.opencv.org/master/d8/d6a/group__imgcodecs__flags.html#ga61d9b0126a3e57d9277ac48327799c80
-
-    Returns:
-        np.ndarray: cv2 image.
-    """
-
-    resp = urlopen(url)
-    image = np.asarray(bytearray(resp.read()), dtype="uint8")
-    image = cv2.imdecode(image, read_flag)
-
-    # return the image
-    return image
