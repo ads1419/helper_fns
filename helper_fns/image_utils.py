@@ -69,10 +69,10 @@ def load_image_url(url: str, read_flag: int = cv2.IMREAD_COLOR) -> np.ndarray:
     image = np.asarray(bytearray(resp.read()), dtype="uint8")
     image = cv2.imdecode(image, read_flag)
 
-    if image.ndim == 4:
+    if image.ndim == 3 and image.shape[2] == 4:
         image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGBA)
 
-    elif image.ndim == 3:
+    elif image.ndim == 3 and image.shape[2] == 3:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     # return the image
@@ -159,7 +159,7 @@ def show_transparent_image(image: Union[np.array, Path, str], color: List = [52,
     if isinstance(image, str) or isinstance(image, Path):
         image = load_rgba(image)
 
-    assert image.ndim == 4, "Image does not contain an alpha channel."
+    assert image.ndim == 3 and image.shape[2] == 4, "Image does not contain an alpha channel."
 
     solid_bg = np.ones_like(image[:, :, 0:3])
     solid_bg[:, :, 2], solid_bg[:, :, 1], solid_bg[:, :, 0] = color  # RGB
