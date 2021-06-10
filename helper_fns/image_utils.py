@@ -53,7 +53,7 @@ def load_rgba(image_path: Union[Path, str], lib: str = "cv2") -> np.array:
     raise FileNotFoundError(f"File not found {image_path}")
 
 
-def url_to_image(url: str, read_flag: int = cv2.IMREAD_COLOR) -> np.ndarray:
+def load_image_url(url: str, read_flag: int = cv2.IMREAD_COLOR) -> np.ndarray:
     """Download the image, convert it to a NumPy array, and then read it into OpenCV format
 
     Args:
